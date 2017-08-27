@@ -103,12 +103,10 @@
 <meta property="og:site_name" content="DL炼丹房">
 <meta property="og:description" content="写在前面从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：Github，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="c:/Users/stevewyl/AppData/Local/Temp/Image.png">
-<meta property="og:updated_time" content="2017-08-27T08:41:06.193Z">
+<meta property="og:updated_time" content="2017-08-27T10:43:21.580Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Keras之文本分类实现">
 <meta name="twitter:description" content="写在前面从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：Github，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，">
-<meta name="twitter:image" content="c:/Users/stevewyl/AppData/Local/Temp/Image.png">
 
 
 
@@ -382,7 +380,7 @@
 </li>
 <li><p>共现矩阵</p>
 <p>为了使用上下文来表示单词间的关系，也有人提出使用基于窗口大小的共现矩阵，但仍然存在数据维度大稀疏的问题。</p>
-<p><img src="C:\Users\stevewyl\AppData\Local\Temp\Image.png" alt=""></p>
+<p>| counts   | I    | like | enjoy | deep | learning | NLP  | flying | .    |<br>| :——- | —- | —- | —– | —- | ——– | —- | —— | —- |<br>| I        | 0    | 2    | 1     | 0    | 0        | 0    | 0      | 0    |<br>| like     | 2    | 0    | 0     | 1    | 0        | 1    | 0      | 0    |<br>| enjoy    | 1    | 0    | 0     | 0    | 0        | 0    | 1      | 0    |<br>| deep     | 0    | 1    | 0     | 0    | 1        | 0    | 0      | 0    |<br>| learning | 0    | 0    | 0     | 1    | 0        | 0    | 0      | 1    |<br>| NLP      | 0    | 1    | 0     | 0    | 0        | 0    | 0      | 1    |<br>| flying   | 0    | 0    | 1     | 0    | 0        | 0    | 0      | 1    |<br>| .        | 0    | 0    | 0     | 0    | 1        | 1    | 1      | 0    |</p>
 </li>
 <li><p>TF-IDF</p>
 <p>TF-IDF 用以评估一字词对于一个文档集或一个语料库中的其中一份文档的重要程度，是一种计算特征权重的方法。核心思想即，字词的重要性随着它在文档中出现的次数成正比增加，但同时会随着它在语料库中出现的频率成反比下降。有效地规避了那些高频却包含很少信息量的词。我们这里也是用TF-IDF 对文本变量进行特征提取。</p>
@@ -399,10 +397,15 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">vect = TfidfVectorizer(stop_words=<span class="string">'english'</span>, token_pattern=<span class="string">r'\b\w&#123;2,&#125;\b'</span>,</div><div class="line">                       min_df=<span class="number">1</span>, max_df=<span class="number">0.1</span>, ngram_range=(<span class="number">1</span>,<span class="number">2</span>))</div><div class="line">mnb = MultinomialNB(alpha=<span class="number">2</span>)</div><div class="line">svm = SGDClassifier(loss=<span class="string">'hinge'</span>, penalty=<span class="string">'l2'</span>, alpha=<span class="number">1e-3</span>, n_iter=<span class="number">5</span>, random_state=<span class="number">42</span>)</div><div class="line">mnb_pipeline = make_pipeline(vect, mnb)</div><div class="line">svm_pipeline = make_pipeline(vect, svm)</div><div class="line">mnb_cv = cross_val_score(mnb_pipeline, title, label, scoring=<span class="string">'accuracy'</span>, cv=<span class="number">10</span>, n_jobs=<span class="number">-1</span>)</div><div class="line">svm_cv = cross_val_score(svm_pipeline, title, label, scoring=<span class="string">'accuracy'</span>, cv=<span class="number">10</span>, n_jobs=<span class="number">-1</span>)</div><div class="line">print(<span class="string">'\nMultinomialNB Classifier\'s Accuracy: %0.5f\n'</span> % mnb_cv.mean())</div><div class="line">print(<span class="string">'\nSVM Classifier\'s Accuracy: %0.5f\n'</span> % svm_cv.mean())</div></pre></td></tr></table></figure>
 <h3 id="深度学习模型"><a href="#深度学习模型" class="headerlink" title="深度学习模型"></a>深度学习模型</h3><p>传统方法对于文本的特征表达能力很弱，神经网络同样不擅长处理这样高维度高稀疏性的数据，因此我们需要对文本做进一步的特征处理，这里就要讲到词嵌入的概念了。深度学习模型中，一个单词常常用一个低维且稠密的向量来表示，如下所示：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">( 0.286, 0.792, -0.177, -0.107, .... , 0.109, ... 0.349, 0.271, -0.642)</div></pre></td></tr></table></figure>
+<ul>
+<li><p>词向量</p>
+<p>主流的词嵌入实现方法有Mikolov的<a href="http://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf" target="_blank" rel="external">Word2Vec</a>和斯坦福大学的<a href="https://nlp.stanford.edu/pubs/glove.pdf" target="_blank" rel="external">Glove</a>，也有人做个实验来比较这两种方法的优劣，并没有多大的差异。Word2Vec是基于预测的词向量模型，简单来说，就是给定一个词，去预测这个词周围可能出现的词，或者给定一些词来确定位于中心位置的词。而Glove是基于统计方法的，通过对词-词共现矩阵里的非零元素进行训练，具体的实现细节可以参考这两篇论文。本文中将使用预训练的Glove300维词向量和由自己文本生成的词向量。</p>
+</li>
+</ul>
 <p>为了快速实现模型，这篇文章中将使用Keras（TensorFlow的高级API）来完成。</p>
 <p>本文主要用到的深度学习模型如下：</p>
 <ul>
-<li>词向量 Word2Vec</li>
+<li>​</li>
 <li>FastText</li>
 <li>CNN</li>
 <li>TextCNN</li>
