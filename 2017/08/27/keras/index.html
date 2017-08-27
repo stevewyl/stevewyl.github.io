@@ -104,7 +104,10 @@
 <meta property="og:description" content="写在前面从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：Github，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/57232353.jpg">
-<meta property="og:updated_time" content="2017-08-27T12:49:15.724Z">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/19849125.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/73075953.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/30339409.jpg">
+<meta property="og:updated_time" content="2017-08-27T13:22:48.464Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Keras之文本分类实现">
 <meta name="twitter:description" content="写在前面从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：Github，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，">
@@ -392,7 +395,7 @@
 <p>分类器就是常见的机器学习分类模型了，常用的有以下两种，这里我不再赘述这两个模型的原理了。</p>
 <ul>
 <li>朴素贝叶斯：从垃圾邮件识别应用开始被广泛使用</li>
-<li>支持向量机：这篇文章很通俗地解释了SVM的工作原理 <a href="http://www.linkedin.com/pulse/please-explain-support-vector-machines-svm-like-i-am-5-joni-salminen" target="_blank" rel="external">SVM</a> </li>
+<li>支持向量机：这篇<a href="http://www.linkedin.com/pulse/please-explain-support-vector-machines-svm-like-i-am-5-joni-salminen" target="_blank" rel="external">文章</a> 很通俗地解释了SVM的工作原理 </li>
 </ul>
 </li>
 </ul>
@@ -408,16 +411,48 @@
 <p>为了快速实现模型，这篇文章中将使用Keras（TensorFlow的高级API）来完成。</p>
 <p>另外，本文主要用到的深度学习模型如下：</p>
 <ul>
-<li>FastText</li>
-<li>CNN</li>
-<li>TextCNN</li>
-<li>LSTM/GRU</li>
-<li>Bi-LSTM</li>
-<li>TextCNN with K-pooling</li>
-<li>CLSTM</li>
-<li>RCNN</li>
-<li>HAN</li>
-<li>Attention Model</li>
+<li><p>CNN </p>
+<p>深度学习入门必学的两大模型之一卷积神经网络。首先我们来理解下什么是卷积操作？卷积，你可以把它想象成一个应用在矩阵上的滑动窗口函数。下图中左边的矩阵表示的是一张黑白图像。每个方格代表了一个像素，0表示黑色，1表示白色。这个滑动窗口称作kernel或者filter。这里我们使用的是一个3*3的filter，将它的值和与其对应的原图像矩阵进行相乘，然后再将它们相加。这样我们在整个原图矩阵上滑动filter来遍历所有像素后得到一个完整的卷积特征。</p>
+<p><img src="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/19849125.jpg" alt=""></p>
+<p>卷积网络也就是对输入样本进行多次卷积操作，提取数据中的局部位置的特征，然后再拼接池化层（图中的Pooling层）做进一步的降维操作，最后与全连接层拼接完成对输入样本的全新的特征构造，将新的特征向量输送给分类器（以图片分类为例）进行预测分类。</p>
+<p><img src="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/73075953.jpg" alt=""></p>
+<p>卷积网络开始崭露头角是在CV领域，2012年的ImageNet竞赛中，大大降低了图片分类的错误率。为什么CNN在计算机视觉领域这么厉害呢？直观的感受就是：</p>
+<ul>
+<li><p>它能够学习识别基本的直线，曲线，然后是形状，点块，然后是图片中更复杂的物体。最终CNN分类器把这些大的，复杂的物体综合起来识别图片</p>
+</li>
+<li><p>在下图中的例子中，可以看作这样的层级关系：</p>
+</li>
+<li><ul>
+<li>简单的形状，如椭圆，暗色圆圈</li>
+<li>复杂的物体（简单形状的组合），例如眼睛，鼻子，毛发</li>
+<li>狗的整体（复杂物体的组合）</li>
+</ul>
+</li>
+<li><p><img src="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/30339409.jpg" alt=""></p>
+</li>
+</ul>
+</li>
+<li><p>RNN</p>
+<p>​</p>
+</li>
+<li><p>TextCNN</p>
+</li>
+<li><p>FastText</p>
+</li>
+<li><p>LSTM/GRU</p>
+</li>
+<li><p>Bi-LSTM</p>
+</li>
+<li><p>TextCNN with K-pooling</p>
+</li>
+<li><p>CLSTM</p>
+</li>
+<li><p>RCNN</p>
+</li>
+<li><p>HAN</p>
+</li>
+<li><p>Attention Model</p>
+</li>
 </ul>
 <h2 id="复现论文模型"><a href="#复现论文模型" class="headerlink" title="复现论文模型"></a>复现论文模型</h2><h2 id="情感分析（推文）"><a href="#情感分析（推文）" class="headerlink" title="情感分析（推文）"></a>情感分析（推文）</h2>
       
