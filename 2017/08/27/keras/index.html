@@ -79,7 +79,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="文本分类,Keras," />
 
 
 
@@ -95,13 +95,18 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="DL炼丹房">
-<meta property="og:url" content="https://stevewyl.github.io/index.html">
+<meta name="description" content="写在前面从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：Github，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，">
+<meta name="keywords" content="文本分类,Keras">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Keras之文本分类实现">
+<meta property="og:url" content="https://stevewyl.github.io/2017/08/27/keras/index.html">
 <meta property="og:site_name" content="DL炼丹房">
+<meta property="og:description" content="写在前面从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：Github，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2017-08-27T11:45:04.222Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="DL炼丹房">
+<meta name="twitter:title" content="Keras之文本分类实现">
+<meta name="twitter:description" content="写在前面从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：Github，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，">
 
 
 
@@ -131,13 +136,13 @@
 
 
 
-  <link rel="canonical" href="https://stevewyl.github.io/"/>
+  <link rel="canonical" href="https://stevewyl.github.io/2017/08/27/keras/"/>
 
 
 
 
 
-  <title>DL炼丹房</title>
+  <title>Keras之文本分类实现 | DL炼丹房</title>
   
 
 
@@ -156,8 +161,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -250,9 +254,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -282,9 +286,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/08/27/keras/" itemprop="url">Keras之文本分类实现</a></h1>
+          <h1 class="post-title" itemprop="name headline">Keras之文本分类实现</h1>
         
 
         <div class="post-meta">
@@ -367,9 +369,7 @@
       
 
       
-        
-          
-            <h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：<a href="https://github.com/llSourcell/How_to_do_Sentiment_Analysis" target="_blank" rel="external">Github</a>，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，是否有可能把过去几年内那些大牛们论文中的模型复现出来呢？</p>
+        <h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：<a href="https://github.com/llSourcell/How_to_do_Sentiment_Analysis" target="_blank" rel="external">Github</a>，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，是否有可能把过去几年内那些大牛们论文中的模型复现出来呢？</p>
 <h2 id="文本多分类"><a href="#文本多分类" class="headerlink" title="文本多分类"></a>文本多分类</h2><p>首先我们来看下数据集长什么样子吧 :P Let‘s get started!<br>我们使用pandas来加载数据，数据集来自IGN.com，收集了过去20年各大游戏厂商发布的游戏数据，如发布日期，发布平台，游戏评价等变量，这里有一篇关于这个数据集很不错的分析教程 <a href="https://www.kaggle.com/ash316/20-years-of-games-analysis" target="_blank" rel="external">Kaggle</a> 。而我们现在想分析下游戏名与用户评价之间的关系，看上去并不合理，我们姑且按照Siraj老师的任务来试试。于是，游戏名作为文本变量将作为模型的输入X，而用户评价词作为文本类别Y。<br>然后来看看各个类别的数量，为了避免类别样本数的不平衡，我们这里把关于评价为Disaster的游戏去除。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">df = pd.read_csv(<span class="string">'ign.csv'</span>).iloc[:, <span class="number">1</span>:<span class="number">3</span>]</div><div class="line">df.score_phrase.value_counts()</div><div class="line">df = df[df.score_phrase != <span class="string">'Disaster'</span>]</div></pre></td></tr></table></figure>
 <p>首先我们先来试试传统机器学习模型对文本分类任务常见的做法吧</p>
@@ -419,8 +419,6 @@
 <li>Attention Model</li>
 </ul>
 <h2 id="复现论文模型"><a href="#复现论文模型" class="headerlink" title="复现论文模型"></a>复现论文模型</h2><h2 id="情感分析（推文）"><a href="#情感分析（推文）" class="headerlink" title="情感分析（推文）"></a>情感分析（推文）</h2>
-          
-        
       
     </div>
     
@@ -435,14 +433,22 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/文本分类/" rel="tag"># 文本分类</a>
+          
+            <a href="/tags/Keras/" rel="tag"># Keras</a>
+          
+        </div>
+      
+
+      
+      
+      
 
       
 
       
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -452,10 +458,11 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -463,6 +470,17 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
 
         </div>
         
@@ -483,8 +501,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/uploads/dabai.jpg"
@@ -572,6 +599,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文本多分类"><span class="nav-number">2.</span> <span class="nav-text">文本多分类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#传统文本分类方法"><span class="nav-number">2.1.</span> <span class="nav-text">传统文本分类方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#深度学习模型"><span class="nav-number">2.2.</span> <span class="nav-text">深度学习模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#复现论文模型"><span class="nav-number">3.</span> <span class="nav-text">复现论文模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#情感分析（推文）"><span class="nav-number">4.</span> <span class="nav-text">情感分析（推文）</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -688,10 +731,10 @@
   
 
   
-    <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
 <script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
 
-  
+
 
   
 
@@ -709,6 +752,18 @@
       <script id="dsq-count-scr" src="https://.disqus.com/count.js" async></script>
     
 
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://stevewyl.github.io/2017/08/27/keras/';
+          this.page.identifier = '2017/08/27/keras/';
+          this.page.title = 'Keras之文本分类实现';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
     
 
   
