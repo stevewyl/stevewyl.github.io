@@ -103,7 +103,7 @@
 <meta property="og:site_name" content="DL炼丹房">
 <meta property="og:description" content="写在前面从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：Github，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2017-08-27T11:45:04.222Z">
+<meta property="og:updated_time" content="2017-08-27T11:54:24.271Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Keras之文本分类实现">
 <meta name="twitter:description" content="写在前面从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：Github，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，">
@@ -381,7 +381,7 @@
 </li>
 <li><p>共现矩阵</p>
 <p>为了使用上下文来表示单词间的关系，也有人提出使用基于窗口大小的共现矩阵，但仍然存在数据维度大稀疏的问题。</p>
-<p>![词共现矩阵][keras/词共现矩阵.jpg]</p>
+<p>![词共现矩阵][keras/co-matrix.png]</p>
 <p>| counts   | I    | like | enjoy | deep | learning | NLP  | flying | .    |<br>| :——- | —- | —- | —– | —- | ——– | —- | —— | —- |<br>| I        | 0    | 2    | 1     | 0    | 0        | 0    | 0      | 0    |<br>| like     | 2    | 0    | 0     | 1    | 0        | 1    | 0      | 0    |<br>| enjoy    | 1    | 0    | 0     | 0    | 0        | 0    | 1      | 0    |<br>| deep     | 0    | 1    | 0     | 0    | 1        | 0    | 0      | 0    |<br>| learning | 0    | 0    | 0     | 1    | 0        | 0    | 0      | 1    |<br>| NLP      | 0    | 1    | 0     | 0    | 0        | 0    | 0      | 1    |<br>| flying   | 0    | 0    | 1     | 0    | 0        | 0    | 0      | 1    |<br>| .        | 0    | 0    | 0     | 0    | 1        | 1    | 1      | 0    |</p>
 </li>
 <li><p>TF-IDF</p>
