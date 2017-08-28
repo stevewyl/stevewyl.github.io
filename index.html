@@ -370,7 +370,8 @@
         
           
             <h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：<a href="https://github.com/llSourcell/How_to_do_Sentiment_Analysis" target="_blank" rel="external">Github</a>，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，是否有可能把过去几年内那些大牛们论文中的模型复现出来呢？</p>
-<h2 id="文本多分类"><a href="#文本多分类" class="headerlink" title="文本多分类"></a>文本多分类</h2><p>首先我们来看下数据集长什么样子吧 :P Let‘s get started!<br>我们使用pandas来加载数据，数据集来自IGN.com，收集了过去20年各大游戏厂商发布的游戏数据，如发布日期，发布平台，游戏评价等变量，这里有一篇关于这个数据集很不错的分析教程 <a href="https://www.kaggle.com/ash316/20-years-of-games-analysis" target="_blank" rel="external">Kaggle</a> 。而我们现在想分析下游戏名与用户评价之间的关系，看上去并不合理，我们姑且按照Siraj老师的任务来试试。于是，游戏名作为文本变量将作为模型的输入X，而用户评价词作为文本类别Y。<br>然后来看看各个类别的数量，为了避免类别样本数的不平衡，我们这里把关于评价为Disaster的游戏去除。</p>
+<h2 id="文本多分类"><a href="#文本多分类" class="headerlink" title="文本多分类"></a>文本多分类</h2><p>首先我们来看下数据集长什么样子吧 :P Let‘s get started!</p>
+<p>我们使用pandas来加载数据，数据集来自IGN.com，收集了过去20年各大游戏厂商发布的游戏数据，如发布日期，发布平台，游戏评价等变量，这里有一篇关于这个数据集很不错的分析教程 <a href="https://www.kaggle.com/ash316/20-years-of-games-analysis" target="_blank" rel="external">Kaggle</a> 。而我们现在想分析下游戏名与用户评价之间的关系，看上去并不合理，我们姑且按照Siraj老师的任务来试试。于是，游戏名作为文本变量将作为模型的输入X，而用户评价词作为文本类别Y。<br>然后来看看各个类别的数量，为了避免类别样本数的不平衡，我们这里把关于评价为Disaster的游戏去除。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">df = pd.read_csv(<span class="string">'ign.csv'</span>).iloc[:, <span class="number">1</span>:<span class="number">3</span>]</div><div class="line">df.score_phrase.value_counts()</div><div class="line">df = df[df.score_phrase != <span class="string">'Disaster'</span>]</div></pre></td></tr></table></figure>
 <p>首先我们先来试试传统机器学习模型对文本分类任务常见的做法吧</p>
 <h3 id="传统文本分类方法"><a href="#传统文本分类方法" class="headerlink" title="传统文本分类方法"></a>传统文本分类方法</h3><ul>
@@ -396,7 +397,7 @@
 </ul>
 <p>使用Scikit-Learn库能够傻瓜似的来实现你的机器学习模型，我们这里使用TfidfVectorizer函数对文本进行特征处理，并去除停用词，模型有多类别朴素贝叶斯和线性SVM分类器。结果很不令人满意，NB模型结果稍好，准确率为28%，领先SVM 1%。下面我们来看看深度学习模型强大的性能。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">vect = TfidfVectorizer(stop_words=<span class="string">'english'</span>, token_pattern=<span class="string">r'\b\w&#123;2,&#125;\b'</span>,</div><div class="line">                       min_df=<span class="number">1</span>, max_df=<span class="number">0.1</span>, ngram_range=(<span class="number">1</span>,<span class="number">2</span>))</div><div class="line">mnb = MultinomialNB(alpha=<span class="number">2</span>)</div><div class="line">svm = SGDClassifier(loss=<span class="string">'hinge'</span>, penalty=<span class="string">'l2'</span>, alpha=<span class="number">1e-3</span>, n_iter=<span class="number">5</span>, random_state=<span class="number">42</span>)</div><div class="line">mnb_pipeline = make_pipeline(vect, mnb)</div><div class="line">svm_pipeline = make_pipeline(vect, svm)</div><div class="line">mnb_cv = cross_val_score(mnb_pipeline, title, label, scoring=<span class="string">'accuracy'</span>, cv=<span class="number">10</span>, n_jobs=<span class="number">-1</span>)</div><div class="line">svm_cv = cross_val_score(svm_pipeline, title, label, scoring=<span class="string">'accuracy'</span>, cv=<span class="number">10</span>, n_jobs=<span class="number">-1</span>)</div><div class="line">print(<span class="string">'\nMultinomialNB Classifier\'s Accuracy: %0.5f\n'</span> % mnb_cv.mean())</div><div class="line">print(<span class="string">'\nSVM Classifier\'s Accuracy: %0.5f\n'</span> % svm_cv.mean())</div></pre></td></tr></table></figure>
-<h3 id="深度学习模型"><a href="#深度学习模型" class="headerlink" title="深度学习模型"></a>深度学习模型</h3><p>传统方法对于文本的特征表达能力很弱，神经网络同样不擅长处理这样高维度高稀疏性的数据，因此我们需要对文本做进一步的特征处理，这里就要讲到词嵌入的概念了。深度学习模型中，一个单词常常用一个低维且稠密的向量来表示，如下所示：</p>
+<h3 id="走进NLP和DL"><a href="#走进NLP和DL" class="headerlink" title="走进NLP和DL"></a>走进NLP和DL</h3><p>传统方法对于文本的特征表达能力很弱，神经网络同样不擅长处理这样高维度高稀疏性的数据，因此我们需要对文本做进一步的特征处理，这里就要讲到词嵌入的概念了。深度学习模型中，一个单词常常用一个低维且稠密的向量来表示，如下所示：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">( 0.286, 0.792, -0.177, -0.107, .... , 0.109, ... 0.349, 0.271, -0.642)</div></pre></td></tr></table></figure>
 <ul>
 <li><p>词向量</p>
@@ -424,23 +425,33 @@
 <p><img src="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/30339409.jpg" alt=""></p>
 </li>
 <li><p>RNN</p>
-<p>而循环网络与CNN不同的是，CNN学习空间位置上局部位置的特征表示，而RNN学习的是时间顺序上的特征，用来处理序列数据，如股价，文本等。RNN之所以称为循环神经网路，即一个序列当前的输出与前面的输出也有关。具体的表现形式为网络会对前面的信息进行记忆并应用于当前输出的计算中，即隐藏层之间的节点是相互连接的，并且隐藏层的输入不仅包括输入层的输出还包括上一时刻隐藏层的输出。<br>$$<br>h<em>t=f(W</em>{hh}h<em>{t-1}+W</em>{xh}x_t)<br>$$<br>就像我们说话一样，我们不能把说的话倒过来表示，这样会变得毫无意义，并不会明白你在说什么，也就是说文本中的每个词是包含顺序信息的，由此可以使用RNN对文本数据进行建模。<br><img src="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/18106498.jpg" alt=""></p>
+<p>而循环网络与CNN不同的是，CNN学习空间位置上局部位置的特征表示，而RNN学习的是时间顺序上的特征，用来处理序列数据，如股价，文本等。RNN之所以称为循环神经网路，即一个序列当前的输出与前面的输出也有关。具体的表现形式为网络会对前面的信息进行记忆并应用于当前输出的计算中，即隐藏层之间的节点是相互连接的，并且隐藏层的输入不仅包括输入层的输出还包括上一时刻隐藏层的输出。</p>
+<p>就像我们说话一样，我们不能把说的话倒过来表示，这样会变得毫无意义，并不会明白你在说什么，也就是说文本中的每个词是包含顺序信息的，由此可以使用RNN对文本数据进行建模。<br><img src="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/18106498.jpg" alt=""></p>
 <p>但是，随着时间的不断增加，你的隐藏层一次又一次地乘以权重W。假如某个权重w是一个接近于0或者大于1的数，随着乘法次数的增加，这个权重值会变得很小或者很大，造成反向传播时梯度计算变得很困难，造成梯度爆炸或者梯度消失的情况，模型难以训练。也就是说一般的RNN模型对于长时间距离的信息记忆很差，比如人老了会忘记某件很久发生的事情一样，于是，LSTM和GRU 应运而生。LSTM与GRU很相似，以LSTM为例。</p>
 <p><img src="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/54396153.jpg" alt=""></p>
 <p>LSTM又称为长短期记忆网络，LSTM 单元乍看起来很复杂。关键的新增部分就在于标记为 C 的单元状态。在这个单元中，有四个显示为黄色框的网络层，每个层都有自己的权重，如以 σ 标记的层是 sigmoid 层。这些红圈表示逐点或逐元素操作。单元状态在通过 LSTM 单元时几乎没有交互，使得大部分信息得以保留，单元状态仅通过这些控制门（gate）进行修改。第一个控制门是遗忘门，用来决定我们会从单元状态中丢弃什么信息。第二个门是更新们，用以确定什么样的新信息被存放到单元状态中。最后一个门是输出门，我们需要确定输出什么样的值。总结来说 LSTM 单元由单元状态和一堆用于更新信息的控制门组成，让信息部分传递到隐藏层状态。更直观的来讲，把LSTM看作是一部电影，可以把单元状态看作是剧情主线，而随着剧情的发展，有些不必要的事件会被遗忘，而一些更加影响主线的剧情会被加入到单元状态中来，不断更新剧情然后输出新的剧情发展。</p>
 </li>
 <li><p>Attention机制</p>
+<p>基于Attention的模型在NLP领域首先被应用于自然语言生成问题中，用于改进机器翻译任务的性能。我们这里也以机器翻译为例来解释下注意力机制的原理。我们可以把翻译任务是一个序列向另一个序列转换的过程。</p>
+<p><img src="http://ovcg0j4b2.bkt.clouddn.com/17-8-29/69730967.jpg" alt=""></p>
+<p>上图就是Seq2Seq模型的基本结构，由编码器（Encoder）和解码器（Decoder）组成。编码器负责将输入的单词按顺序进行信息提取，在最后一步生成的隐藏状态即固定长度的句子的特征向量。然后解码器从这个句子向量中获取信息对文本进行翻译。由于解码器的主要信息来源就是最后一步的隐藏状态，这个h3向量必须尽可能地包含句子的所有必要的信息。这个向量说白了就是句子嵌入（类比词嵌入）。假如我们需要翻译的文本不是很长，这个模型已经能达到很不错的性能。假如我们现在要翻译一句超过50个单词的句子，似乎这个模型很难再hold住，即使你在训练的时候使用了LSTM去提取句子特征，去尽可能保留过去的记忆，但还是达不到想要的结果。</p>
+<p>而注意力机制恰恰是为了解决长距离依赖的问题，我们不再需要固定长度的句子向量，而是让解码器自己去输入文本中寻找想要关注的被翻译文本。比如把”I am learning deep learning model“成中文时，我们让解码器去与输入文本中的词对齐，翻译deep的时候去关注deep这个词，而不是平等对待每个有可能的词，找到与输入文本相对应的相同语义的词，而不再是对句子进行特征提取。</p>
+<p><img src="http://ovcg0j4b2.bkt.clouddn.com/17-8-29/74136352.jpg" alt=""></p>
+<p>上图我们可以看到，解码器在翻译下一个词时，需要依赖之前已经翻译好的文本和与输入文本相对齐的那个词。简单描述的话，用解码器t时刻的隐藏状态去和输入文本中的每个单词对应的隐藏状态去比对，通过某个函数f去计算带翻译的单词yi与每个输入单词对齐的可能性。而编码器由Bi-LSTM模型组成。不同的语言的f函数可能会有差别，就像中文和英文，语法结构差异很大，很难按顺序单词一一对齐。由此可以得出结论，注意力机制的核心思想是在翻译每个目标词（或对文本进行分类时）所用的上下文是不同的，这样的考虑显然是更合理的。具体实现请见这篇<a href="https://arxiv.org/pdf/1409.0473v7.pdf" target="_blank" rel="external">论文</a>。而如何将注意力机制运用到文本分类中来，下文会介绍。</p>
 </li>
 </ul>
-<h3 id="复现论文模型"><a href="#复现论文模型" class="headerlink" title="复现论文模型"></a>复现论文模型</h3><ul>
+<h3 id="深度学习文本分类模型"><a href="#深度学习文本分类模型" class="headerlink" title="深度学习文本分类模型"></a>深度学习文本分类模型</h3><ul>
 <li>TextCNN</li>
 <li>FastText</li>
 <li>Bi-LSTM</li>
 <li>TextCNN with K-pooling</li>
-<li>CLSTM</li>
+<li>CLSTM </li>
 <li>RCNN</li>
 <li>HAN</li>
-<li>Attention Model</li>
+<li>Attention Model<ul>
+<li>本文只涉及单句，因此构不成文档，只需要 word-level 这一层的注意力即可。加入Attention之后最大的好处自然是能够直观的解释各个句子和词对分类类别的重要性。</li>
+</ul>
+</li>
 </ul>
 <h2 id="情感分析（推文）"><a href="#情感分析（推文）" class="headerlink" title="情感分析（推文）"></a>情感分析（推文）</h2>
           
