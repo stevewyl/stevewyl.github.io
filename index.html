@@ -332,17 +332,6 @@
 
           
             
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2017/08/27/keras/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count"
-                        data-disqus-identifier="2017/08/27/keras/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
           
 
           
@@ -369,7 +358,7 @@
       
         
           
-            <h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：<a href="https://github.com/llSourcell/How_to_do_Sentiment_Analysis" target="_blank" rel="external">Github</a>，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，是否有可能把过去几年内那些大牛们论文中的模型复现出来呢？阅读这篇文章，需要你对深度学习的模型有一个基础的了解哦！</p>
+            <h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：<a href="https://github.com/llSourcell/How_to_do_Sentiment_Analysis" target="_blank" rel="external">Github</a>，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，是否有可能把过去几年内那些大牛们论文中的模型复现出来呢？阅读这篇文章，需要你对自然语言处理和深度学习的模型有一个基础的了解哦！</p>
 <h2 id="文本多分类"><a href="#文本多分类" class="headerlink" title="文本多分类"></a>文本多分类</h2><p>首先我们来看下数据集长什么样子吧 :P Let‘s get started!</p>
 <p>我们使用pandas来加载数据，数据集来自IGN.com，收集了过去20年各大游戏厂商发布的游戏数据，如发布日期，发布平台，游戏评价等变量，这里有一篇关于这个数据集很不错的分析教程 <a href="https://www.kaggle.com/ash316/20-years-of-games-analysis" target="_blank" rel="external">Kaggle</a> 。而我们现在想分析下游戏名与用户评价之间的关系，看上去并不合理，我们姑且按照Siraj老师的任务来试试。于是，游戏名作为文本变量将作为模型的输入X，而用户评价词作为文本类别Y。<br>然后来看看各个类别的数量，为了避免类别样本数的不平衡，我们这里把关于评价为Disaster的游戏去除。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">df = pd.read_csv(<span class="string">'ign.csv'</span>).iloc[:, <span class="number">1</span>:<span class="number">3</span>]</div><div class="line">df.score_phrase.value_counts()</div><div class="line">df = df[df.score_phrase != <span class="string">'Disaster'</span>]</div></pre></td></tr></table></figure>
@@ -444,7 +433,7 @@
 <li><p>TextCNN</p>
 <p>这是CNN首次被应用于文本分类任务的开山之作，可以说，之后很多论文都是基于此进行拓展的。它是由<a href="https://arxiv.org/abs/1408.5882" target="_blank" rel="external">Yoon Kim</a>于2014年提出的，你可以在github上找到各种不同深度学习框架对于这个模型的实现。下面我们来细细品读这篇论文吧。</p>
 <p><img src="http://ovcg0j4b2.bkt.clouddn.com/17-8-29/75206008.jpg" alt=""></p>
-<p>上图很好地诠释了模型的框架。假设我们有一句句子需要对其进行分类。句子中每个词是由n维词向量组成的，也就是说输入矩阵大小为m*n，其中m为句子长度。CNN需要对输入样本进行卷积操作，对于文本数据，filter不再横向滑动，仅仅是向下移动，有点类似于N-gram在提取词与词间的局部相关性。图中共有三种步长策略，分别是2,3,4，每个步长都有两个filter（实际训练时filter数量会很多）。在不同词窗上应用不同filter，最终得到6个卷积后的向量。然后对每一个向量进行最大化池化操作并拼接各个池化值，最终得到这个句子的特征表示，将这个句子向量丢给分类器进行分类，完成整个流程。</p>
+<p>上图很好地诠释了模型的框架。假设我们有一句句子需要对其进行分类。句子中每个词是由n维词向量组成的，也就是说输入矩阵大小为m*n，其中m为句子长度。CNN需要对输入样本进行卷积操作，对于文本数据，filter不再横向滑动，仅仅是向下移动，有点类似于N-gram在提取词与词间的局部相关性。图中共有三种步长策略，分别是2,3,4，每个步长都有两个filter（实际训练时filter数量会很多）。在不同词窗上应用不同filter，最终得到6个卷积后的向量。然后对每一个向量进行最大化池化操作并拼接各个池化值，最终得到这个句子的特征表示，将这个句子向量丢给分类器进行分类，至此完成整个流程。</p>
 </li>
 <li><p>Bi-LSTM</p>
 </li>
@@ -755,14 +744,6 @@
 
   
 
-
-  
-
-    
-      <script id="dsq-count-scr" src="https://.disqus.com/count.js" async></script>
-    
-
-    
 
   
 
