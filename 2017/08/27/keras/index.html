@@ -113,7 +113,7 @@
 <meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-29/74136352.jpg">
 <meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-29/75206008.jpg">
 <meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-29/18150827.jpg">
-<meta property="og:updated_time" content="2017-08-30T03:14:40.008Z">
+<meta property="og:updated_time" content="2017-08-30T13:17:57.046Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Keras之文本分类实现">
 <meta name="twitter:description" content="写在前面从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：Github，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，">
@@ -349,6 +349,17 @@
 
           
           
+             <span id="/2017/08/27/keras/" class="leancloud_visitors" data-flag-title="Keras之文本分类实现">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
 
           
 
@@ -404,7 +415,7 @@
 <p>主流的词嵌入实现方法有Mikolov的<a href="http://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf" target="_blank" rel="external">Word2Vec</a>和斯坦福大学的<a href="https://nlp.stanford.edu/pubs/glove.pdf" target="_blank" rel="external">Glove</a>，也有人做过<a href="https://rare-technologies.com/making-sense-of-word2vec/" target="_blank" rel="external">实验</a>来比较这两种方法的优劣，并没有多大的差异。Word2Vec是基于预测的词向量模型，简单来说，就是给定一个词，去预测这个词周围可能出现的词，或者给定一些词来确定位于中心位置的词。而Glove是基于统计方法的，通过对词-词共现矩阵里的非零元素进行训练。总体来说，Word2Vec使用的是局部信息，而Glove使用的是全局信息，因此前者训练起来更慢但不占用内存，而Glove通过更多的计算资源换取训练速度上的提升。具体的实现细节可以参考这两篇论文。本文中将使用预训练的Glove300维词向量和由自己文本生成的词向量。</p>
 </li>
 </ul>
-<p>为了快速实现模型，这篇文章中将使用Keras（TensorFlow的高级API）来完成。</p>
+<p>为了快速实现模型，这篇文章中将使用Keras（TensorFlow的高级API）来完成。要使用Keras前，你必须安装TensorFlow作为其后端，Keras目前支持Tensorflow、Theano和CNTK作为后端，不过我还是推荐大家使用TensorFlow。Keras的中文<a href="http://keras-cn.readthedocs.io/en/latest/for_beginners/keras_linux/" target="_blank" rel="external">文档</a>能够帮助大家无坑完成安装过程。</p>
 <p>我们先来了解一些基础的深度学习模型吧！</p>
 <ul>
 <li><p>CNN </p>
@@ -474,10 +485,11 @@
 </li>
 </ul>
 <h3 id="实战！"><a href="#实战！" class="headerlink" title="实战！"></a>实战！</h3><p>首先我们先要对文本数据进行编码，因为模型只能接受数值型的数据。常见的编码之前有提到过有One-Hot和词嵌入。第一步，来划分训练样本和测试样本。如果需要将你的模型部署到产品中去，则需要更加复杂的划分，详情课见吴恩达最新的AI<a href="https://www.deeplearning.ai/" target="_blank" rel="external">课程</a>中提及的机器学习项目中必须注意的一些问题。这里，我们不需要考虑太多的细节，就简单划分训练集和测试集即可。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 划分训练/测试集</span></div><div class="line">X_train, X_test, y_train, y_test = train_test_split(title, label, test_size=<span class="number">0.1</span>, random_state=<span class="number">42</span>)</div><div class="line"></div><div class="line"><span class="comment"># 对类别变量进行编码，共10类</span></div><div class="line">y_labels = list(y_train.value_counts().index)</div><div class="line">le = preprocessing.LabelEncoder()</div><div class="line">le.fit(y_labels)</div><div class="line">num_labels = len(y_labels)</div><div class="line">y_train = to_categorical(y_train.map(<span class="keyword">lambda</span> x: le.transform([x])[<span class="number">0</span>]), num_labels)</div><div class="line">y_test = to_categorical(y_test.map(<span class="keyword">lambda</span> x: le.transform([x])[<span class="number">0</span>]), num_labels)</div><div class="line"></div><div class="line"><span class="comment"># 分词，构建单词-id词典       </span></div><div class="line">tokenizer = Tokenizer(filters=<span class="string">'!"#$%&amp;()*+,-./:;&lt;=&gt;?@[\\]^_`&#123;|&#125;~\t\n'</span>,lower=<span class="keyword">True</span>,split=<span class="string">" "</span>)</div><div class="line">tokenizer.fit_on_texts(title)</div><div class="line">vocab = tokenizer.word_index</div><div class="line"></div><div class="line"><span class="comment"># 将每个词用词典中的数值代替</span></div><div class="line">X_train_word_ids = tokenizer.texts_to_sequences(X_train)</div><div class="line">X_test_word_ids = tokenizer.texts_to_sequences(X_test)</div><div class="line"></div><div class="line"><span class="comment"># One-hot</span></div><div class="line">x_train = tokenizer.sequences_to_matrix(X_train_word_ids, mode=<span class="string">'binary'</span>)</div><div class="line">x_test = tokenizer.sequences_to_matrix(X_test_word_ids, mode=<span class="string">'binary'</span>)</div><div class="line"></div><div class="line"><span class="comment"># 序列模式</span></div><div class="line">x_train = pad_sequences(X_train_word_ids, maxlen=<span class="number">20</span>)</div><div class="line">x_test = pad_sequences(X_test_word_ids, maxlen=<span class="number">20</span>)</div></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 导入使用到的库</span></div><div class="line"><span class="keyword">from</span> keras.preprocessing.sequence <span class="keyword">import</span> pad_sequences</div><div class="line"><span class="keyword">from</span> keras.preprocessing.text <span class="keyword">import</span> Tokenizer</div><div class="line"><span class="keyword">from</span> keras.layers.merge <span class="keyword">import</span> concatenate</div><div class="line"><span class="keyword">from</span> keras.models <span class="keyword">import</span> Sequential, Model</div><div class="line"><span class="keyword">from</span> keras.layers <span class="keyword">import</span> Dense, Embedding, Activation, Merge, Input, Lambda, Reshape</div><div class="line"><span class="keyword">from</span> keras.layers <span class="keyword">import</span> Convolution1D, Flatten, Dropout, MaxPool1D, GlobalAveragePooling1D</div><div class="line"><span class="keyword">from</span> keras.layers <span class="keyword">import</span> LSTM, GRU, TimeDistributed, Bidirectional</div><div class="line"><span class="keyword">from</span> keras.utils.np_utils <span class="keyword">import</span> to_categorical</div><div class="line"><span class="keyword">from</span> sklearn.naive_bayes <span class="keyword">import</span> MultinomialNB</div><div class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> SGDClassifier</div><div class="line"><span class="keyword">from</span> sklearn.feature_extraction.text <span class="keyword">import</span> TfidfVectorizer</div><div class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</div><div class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</div><div class="line"></div><div class="line"><span class="comment"># 划分训练/测试集</span></div><div class="line">X_train, X_test, y_train, y_test = train_test_split(title, label, test_size=<span class="number">0.1</span>, random_state=<span class="number">42</span>)</div><div class="line"></div><div class="line"><span class="comment"># 对类别变量进行编码，共10类</span></div><div class="line">y_labels = list(y_train.value_counts().index)</div><div class="line">le = preprocessing.LabelEncoder()</div><div class="line">le.fit(y_labels)</div><div class="line">num_labels = len(y_labels)</div><div class="line">y_train = to_categorical(y_train.map(<span class="keyword">lambda</span> x: le.transform([x])[<span class="number">0</span>]), num_labels)</div><div class="line">y_test = to_categorical(y_test.map(<span class="keyword">lambda</span> x: le.transform([x])[<span class="number">0</span>]), num_labels)</div><div class="line"></div><div class="line"><span class="comment"># 分词，构建单词-id词典       </span></div><div class="line">tokenizer = Tokenizer(filters=<span class="string">'!"#$%&amp;()*+,-./:;&lt;=&gt;?@[\\]^_`&#123;|&#125;~\t\n'</span>,lower=<span class="keyword">True</span>,split=<span class="string">" "</span>)</div><div class="line">tokenizer.fit_on_texts(title)</div><div class="line">vocab = tokenizer.word_index</div><div class="line"></div><div class="line"><span class="comment"># 将每个词用词典中的数值代替</span></div><div class="line">X_train_word_ids = tokenizer.texts_to_sequences(X_train)</div><div class="line">X_test_word_ids = tokenizer.texts_to_sequences(X_test)</div><div class="line"></div><div class="line"><span class="comment"># One-hot</span></div><div class="line">x_train = tokenizer.sequences_to_matrix(X_train_word_ids, mode=<span class="string">'binary'</span>)</div><div class="line">x_test = tokenizer.sequences_to_matrix(X_test_word_ids, mode=<span class="string">'binary'</span>)</div><div class="line"></div><div class="line"><span class="comment"># 序列模式</span></div><div class="line">x_train = pad_sequences(X_train_word_ids, maxlen=<span class="number">20</span>)</div><div class="line">x_test = pad_sequences(X_test_word_ids, maxlen=<span class="number">20</span>)</div></pre></td></tr></table></figure>
 <p>Keras提供两大类模型框架。第一种是Sequential模式，就像搭积木一样，将你想要的网络层拼接起来，可以理解为串联。而另外一种是Model模式，需要你指定模型的输入和输出格式，更加灵活地组合你的网络层，可以理解为串联加并联。搭建完模型结构后，你需要对模型进行编译，这一步你需要指定模型的损失函数，本文是文本多分类任务，所以损失函数是多类别的交叉熵函数。另外， 需要确定损失函数的优化算法和模型评估指标。Adam优化器是目前公认的各项任务中性能最优的，所以本文将全部使用Adam作为优化器。这里有一篇实战<a href="https://blog.slinuxer.com/2016/09/sgd-comparison" target="_blank" rel="external">教程</a>对不同优化器做了性能评估。接着就是模型的训练，使用fit函数，这里需要指定的参数有输入数据，批量大小，迭代轮数，验证数据集等。然后，你就能看到你的模型开始愉快地运行起来了。Keras作为Tensforflow的高级API，对很多细节进行了封装，可以让深度学习小白快速上手，如果你需要实现更加复杂的模型的话，就需要去好好研究下Tensorflow了。下一篇博文目标是用Tensorflow来实现简单的机器翻译任务，也为接下来准备参加的AI Challenger比赛做准备！</p>
 <ul>
-<li><p>MLP</p>
+<li><p>One-Hot + MLP</p>
+<p>结果居然出奇的好！卖个关子，最后看看各个模型的最终准确率排名 = =</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">model = Sequential()</div><div class="line"><span class="comment"># 全连接层</span></div><div class="line">model.add(Dense(<span class="number">512</span>, input_shape=(len(vocab)+<span class="number">1</span>,), activation=<span class="string">'relu'</span>))</div><div class="line"><span class="comment"># DropOut层</span></div><div class="line">model.add(Dropout(<span class="number">0.5</span>))</div><div class="line"><span class="comment"># 全连接层+分类器</span></div><div class="line">model.add(Dense(num_labels,activation=<span class="string">'softmax'</span>))</div><div class="line"></div><div class="line">model.compile(loss=<span class="string">'categorical_crossentropy'</span>,</div><div class="line">              optimizer=<span class="string">'adam'</span>,</div><div class="line">              metrics=[<span class="string">'accuracy'</span>])</div><div class="line"></div><div class="line">model.fit(x_train, y_train,</div><div class="line">          batch_size=<span class="number">32</span>,</div><div class="line">          epochs=<span class="number">15</span>,</div><div class="line">          validation_data=(x_test, y_test))</div></pre></td></tr></table></figure>
 </li>
 <li><p>CNN</p>
@@ -486,24 +498,49 @@
 <p>LeNet-5是卷积神经网络的作者Yann LeCun用于MNIST识别任务提出的模型。模型很简单，就是卷积池化层的堆叠，最后加上几层全连接层。我们依样画葫芦，将它运用在文本分类任务中，只是模型的输入不同。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">model.add(Convolution1D(<span class="number">256</span>, <span class="number">3</span>, padding=<span class="string">'same'</span>))</div><div class="line">model.add(MaxPool1D(<span class="number">3</span>,<span class="number">3</span>,padding=<span class="string">'same'</span>))</div><div class="line">model.add(Convolution1D(<span class="number">128</span>, <span class="number">3</span>, padding=<span class="string">'same'</span>))</div><div class="line">model.add(MaxPool1D(<span class="number">3</span>,<span class="number">3</span>,padding=<span class="string">'same'</span>))</div><div class="line">model.add(Convolution1D(<span class="number">64</span>, <span class="number">3</span>, padding=<span class="string">'same'</span>))</div><div class="line">model.add(Flatten())</div><div class="line">model.add(Dropout(<span class="number">0.1</span>))</div><div class="line">model.add(Dense(<span class="number">256</span>,activation=<span class="string">'relu'</span>))</div><div class="line">model.add(Dropout(<span class="number">0.1</span>))</div><div class="line">model.add(Dense(num_labels,activation=<span class="string">'softmax'</span>))</div><div class="line"></div><div class="line">model.compile(loss=<span class="string">'categorical_crossentropy'</span>,</div><div class="line">              optimizer=<span class="string">'adam'</span>,</div><div class="line">              metrics=[<span class="string">'accuracy'</span>])</div><div class="line"></div><div class="line">model.fit(X_train_padded_seqs, y_train,</div><div class="line">          batch_size=<span class="number">32</span>,</div><div class="line">          epochs=<span class="number">15</span>,</div><div class="line">          validation_data=(X_test_padded_seqs, y_test))</div></pre></td></tr></table></figure>
 </li>
-<li><p>TextCNN</p>
+<li><p>TextCNN（这里需要使用Model模式）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">main_input = Input(shape=(<span class="number">20</span>,), dtype=<span class="string">'float64'</span>)</div><div class="line"><span class="comment"># 词嵌入（未使用预训练的词向量）</span></div><div class="line">embedder = Embedding(len(vocab) + <span class="number">1</span>, <span class="number">300</span>, input_length = <span class="number">20</span>, weights = [embedding_matrix], trainable = <span class="keyword">False</span>)</div><div class="line">embed = embedder(main_input)</div><div class="line"><span class="comment"># 词窗大小分别为3,4,5</span></div><div class="line">cnn1 = Convolution1D(<span class="number">256</span>, <span class="number">3</span>, padding=<span class="string">'same'</span>, strides = <span class="number">1</span>, activation=<span class="string">'relu'</span>)(embed)</div><div class="line">cnn1 = MaxPool1D(pool_size=<span class="number">4</span>)(cnn1)</div><div class="line">cnn2 = Convolution1D(<span class="number">256</span>, <span class="number">4</span>, padding=<span class="string">'same'</span>, strides = <span class="number">1</span>, activation=<span class="string">'relu'</span>)(embed)</div><div class="line">cnn2 = MaxPool1D(pool_size=<span class="number">4</span>)(cnn2)</div><div class="line">cnn3 = Convolution1D(<span class="number">256</span>, <span class="number">5</span>, padding=<span class="string">'same'</span>, strides = <span class="number">1</span>, activation=<span class="string">'relu'</span>)(embed)</div><div class="line">cnn3 = MaxPool1D(pool_size=<span class="number">4</span>)(cnn3)</div><div class="line"><span class="comment"># 合并三个模型的输出向量</span></div><div class="line">cnn = concatenate([cnn1,cnn2,cnn3], axis=<span class="number">-1</span>)</div><div class="line">flat = Flatten()(cnn)</div><div class="line">drop = Dropout(<span class="number">0.2</span>)(flat)</div><div class="line">main_output = Dense(num_labels, activation=<span class="string">'softmax'</span>)(drop)</div><div class="line">model = Model(inputs = main_input, outputs = main_output)</div></pre></td></tr></table></figure>
 </li>
 </ul>
 </li>
 <li><p>RNN</p>
 <ul>
-<li>GRU</li>
-<li>Bi-GRU</li>
+<li><p>LSTM</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">model = Sequential()</div><div class="line">model.add(Embedding(len(vocab)+<span class="number">1</span>, <span class="number">300</span>, input_length=<span class="number">20</span>))</div><div class="line">model.add(LSTM(<span class="number">256</span>, dropout=<span class="number">0.2</span>, recurrent_dropout=<span class="number">0.1</span>))</div><div class="line">model.add(Dense(num_labels, activation=<span class="string">'softmax'</span>))</div></pre></td></tr></table></figure>
+</li>
+<li><p>Bi-GRU</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">model = Sequential()</div><div class="line">model.add(Embedding(len(vocab)+<span class="number">1</span>, <span class="number">300</span>, input_length=<span class="number">20</span>))</div><div class="line">model.add(Bidirectional(GRU(<span class="number">256</span>, dropout=<span class="number">0.2</span>, recurrent_dropout=<span class="number">0.1</span>, return_sequences=<span class="keyword">True</span>)))</div><div class="line">model.add(Bidirectional(GRU(<span class="number">256</span>, dropout=<span class="number">0.2</span>, recurrent_dropout=<span class="number">0.1</span>)))</div><div class="line">model.add(Dense(num_labels, activation=<span class="string">'softmax'</span>))</div></pre></td></tr></table></figure>
+</li>
+<li><p>TextRNN</p>
+</li>
+<li><p>​</p>
+</li>
 </ul>
 </li>
 <li><p>CNN+RNN</p>
+<ul>
+<li><p>串联</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">model = Sequential()</div><div class="line">model.add(Embedding(len(vocab)+<span class="number">1</span>, <span class="number">300</span>, input_length=<span class="number">20</span>))</div><div class="line">model.add(Convolution1D(<span class="number">256</span>, <span class="number">3</span>, padding=<span class="string">'same'</span>, strides = <span class="number">1</span>))</div><div class="line">model.add(Activation(<span class="string">'relu'</span>))</div><div class="line">model.add(MaxPool1D(pool_size=<span class="number">2</span>))</div><div class="line">model.add(GRU(<span class="number">256</span>, dropout=<span class="number">0.2</span>, recurrent_dropout=<span class="number">0.1</span>, return_sequences = <span class="keyword">True</span>))</div><div class="line">model.add(GRU(<span class="number">256</span>, dropout=<span class="number">0.2</span>, recurrent_dropout=<span class="number">0.1</span>))</div><div class="line">model.add(Dense(num_labels, activation=<span class="string">'softmax'</span>))</div></pre></td></tr></table></figure>
+</li>
+<li><p>并联（<a href="http://www.cips-cl.org/static/anthology/CCL-2016/CCL-16-004.pdf" target="_blank" rel="external">论文</a>）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">main_input = Input(shape=(<span class="number">20</span>,), dtype=<span class="string">'float64'</span>)</div><div class="line">embed = Embedding(len(vocab)+<span class="number">1</span>, <span class="number">256</span>, input_length=<span class="number">20</span>)(main_input)</div><div class="line">cnn = Convolution1D(<span class="number">256</span>, <span class="number">3</span>, padding=<span class="string">'same'</span>, strides = <span class="number">1</span>, activation=<span class="string">'relu'</span>)(embed)</div><div class="line">cnn = MaxPool1D(pool_size=<span class="number">4</span>)(cnn)</div><div class="line">cnn = Flatten()(cnn)</div><div class="line">cnn = Dense(<span class="number">256</span>)(cnn)</div><div class="line">rnn = Bidirectional(GRU(<span class="number">256</span>, dropout=<span class="number">0.2</span>, recurrent_dropout=<span class="number">0.1</span>))(embed)</div><div class="line">rnn = Dense(<span class="number">256</span>)(rnn)</div><div class="line">con = concatenate([cnn,rnn], axis=<span class="number">-1</span>)</div><div class="line">main_output = Dense(num_labels, activation=<span class="string">'softmax'</span>)(con)</div><div class="line">model = Model(inputs = main_input, outputs = main_output)</div></pre></td></tr></table></figure>
+</li>
+<li><p>RCNN</p>
+<p>​</p>
+</li>
+</ul>
 </li>
 <li><p>Attention</p>
 </li>
-<li><p>FastText</p>
+<li><p>FastText（模型很简单，比较复杂的是构造输入数据）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 生成n-gram组合的词(以3为例)</span></div><div class="line">ngram = <span class="number">3</span></div><div class="line"><span class="comment"># 将n-gram词加入到词表</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_ngram</span><span class="params">(sent, ngram_value)</span>:</span></div><div class="line">	<span class="keyword">return</span> set(zip(*[sent[i:] <span class="keyword">for</span> i <span class="keyword">in</span> range(ngram_value)]))</div><div class="line">ngram_set = set()</div><div class="line"><span class="keyword">for</span> sentence <span class="keyword">in</span> X_train_padded_seqs:</div><div class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">2</span>, ngram+<span class="number">1</span>):</div><div class="line">    	set_of_ngram = create_ngram(sentence, i)</div><div class="line">    	ngram_set.update(set_of_ngram)</div><div class="line"><span class="comment"># 给n-gram词汇编码</span></div><div class="line">start_index = len(vocab) + <span class="number">2</span></div><div class="line">token_indice = &#123;v: k + start_index <span class="keyword">for</span> k, v <span class="keyword">in</span> enumerate(ngram_set)&#125; <span class="comment"># 给n-gram词汇编码</span></div><div class="line">indice_token = &#123;token_indice[k]: k <span class="keyword">for</span> k <span class="keyword">in</span> token_indice&#125;</div><div class="line">max_features = np.max(list(indice_token.keys())) + <span class="number">1</span></div><div class="line"><span class="comment"># 将n-gram词加入到输入文本的末端</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">add_ngram</span><span class="params">(sequences, token_indice, ngram_range)</span>:</span></div><div class="line">    new_sequences = []</div><div class="line">    <span class="keyword">for</span> sent <span class="keyword">in</span> sequences:</div><div class="line">        new_list = sent[:]</div><div class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(len(new_list) - ngram_range + <span class="number">1</span>):</div><div class="line">            <span class="keyword">for</span> ngram_value <span class="keyword">in</span> range(<span class="number">2</span>, ngram_range + <span class="number">1</span>):</div><div class="line">                ngram = tuple(new_list[i:i + ngram_value])</div><div class="line">                <span class="keyword">if</span> ngram <span class="keyword">in</span> token_indice:</div><div class="line">                    new_list.append(token_indice[ngram])</div><div class="line">        new_sequences.append(new_list)</div><div class="line">    <span class="keyword">return</span> new_sequences</div><div class="line">  </div><div class="line">x_train = add_ngram(X_train_word_ids, token_indice, ngram)</div><div class="line">x_test = add_ngram(X_test_word_ids, token_indice, ngram)</div><div class="line">x_train = pad_sequences(x_train, maxlen=<span class="number">25</span>)</div><div class="line">x_test = pad_sequences(x_test, maxlen=<span class="number">25</span>)</div><div class="line"></div><div class="line">model = Sequential()</div><div class="line">model.add(Embedding(max_features, <span class="number">300</span>, input_length=<span class="number">25</span>))</div><div class="line">model.add(GlobalAveragePooling1D())</div><div class="line">model.add(Dense(num_labels, activation=<span class="string">'softmax'</span>))</div></pre></td></tr></table></figure>
+</li>
+<li><p>模型结果比较</p>
+<p>​</p>
 </li>
 </ul>
-<h2 id="推文情感分析"><a href="#推文情感分析" class="headerlink" title="推文情感分析"></a>推文情感分析</h2>
+<h2 id="推文情感分析"><a href="#推文情感分析" class="headerlink" title="推文情感分析"></a>推文情感分析</h2><p>之前我提到其实，这个分类任务并没有什么实际的意义，只是为了熟悉模型，小试牛刀，接下来我们来试试更大的数据集，比如推文的情感分析任务。</p>
+
       
     </div>
     
@@ -546,31 +583,11 @@
 
     <div class="post-spread">
       
-        <!-- JiaThis Button BEGIN -->
-<div class="jiathis_style">
-<span class="jiathis_txt">分享到：</span>
-<a class="jiathis_button_fav">收藏夹</a>
-<a class="jiathis_button_copy">复制网址</a>
-<a class="jiathis_button_email">邮件</a>
-<a class="jiathis_button_weixin">微信</a>
-<a class="jiathis_button_qzone">QQ空间</a>
-<a class="jiathis_button_tqq">腾讯微薄</a>
-<a class="jiathis_button_douban">豆瓣</a>
-<a class="jiathis_button_share">一键分享</a>
-
-<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
-<a class="jiathis_counter_style"></a>
-</div>
-<script type="text/javascript" >
-var jiathis_config={
-  data_track_clickback:true,
-  summary:"",
-  shortUrl:false,
-  hideMore:false
-}
+        
+<script>
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
 </script>
-<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
-<!-- JiaThis Button END -->
+
       
     </div>
   </div>
@@ -901,6 +918,113 @@ var jiathis_config={
 
 
   
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("3t1EHko0Ctbvuk2O9gAvOex5-9Nh9j0Va", "7yP9fKdHsXruhlcqv9vwnGES");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
 
   
 
