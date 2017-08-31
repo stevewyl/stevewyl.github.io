@@ -445,17 +445,19 @@
 <p>这是CNN首次被应用于文本分类任务的开山之作，可以说，之后很多论文都是基于此进行拓展的。它是由<a href="https://arxiv.org/abs/1408.5882" target="_blank" rel="external">Yoon Kim</a>于2014年提出的，你可以在github上找到各种不同深度学习框架对于这个模型的实现。下面我们来细细品读这篇论文吧。</p>
 <p><img src="http://ovcg0j4b2.bkt.clouddn.com/17-8-29/75206008.jpg" alt=""></p>
 <p>上图很好地诠释了模型的框架。假设我们有一句句子需要对其进行分类。句子中每个词是由n维词向量组成的，也就是说输入矩阵大小为m*n，其中m为句子长度。CNN需要对输入样本进行卷积操作，对于文本数据，filter不再横向滑动，仅仅是向下移动，有点类似于N-gram在提取词与词间的局部相关性。图中共有三种步长策略，分别是2,3,4，每个步长都有两个filter（实际训练时filter数量会很多）。在不同词窗上应用不同filter，最终得到6个卷积后的向量。然后对每一个向量进行最大化池化操作并拼接各个池化值，最终得到这个句子的特征表示，将这个句子向量丢给分类器进行分类，至此完成整个流程。</p>
-<p>文中作者还提出了动态的词向量，即将词向量也作为权重变量进行训练，而我们平时常用的产生词向量的方法有从当前数据集中自己产生词向量和使用预训练好的word2vec或glove词向量，都属于静态词向量范畴，即它们不再网络训练时发生变化。文中实验表明，动态的词向量表现更好。我也将在下一篇博文中尝使用tensorflow来实现这种动态词向量。</p>
+<p>文中作者还提出了动态的词向量，即将词向量也作为权重变量进行训练，而我们平时常用的产生词向量的方法有从当前数据集中自己产生的词向量和使用预训练好的word2vec或glove词向量，都属于静态词向量范畴，即它们不再网络训练时发生变化。文中实验表明，动态的词向量表现更好。我也将在下一篇博文中尝使用Tensorflow来实现这种动态词向量。</p>
 </li>
 <li><p>TextCNN with K-pooling</p>
+</li>
+<li><p>DCNN</p>
+</li>
+<li><p>CharCNN</p>
+</li>
+<li><p>CharRNN</p>
 <p>​</p>
 </li>
 <li><p>Bi-LSTM</p>
 <p>本篇<a href="https://www.ijcai.org/Proceedings/16/Papers/408.pdf" target="_blank" rel="external">论文</a>由复旦大学的邱锡鹏教授的团队于2015年发表，文中详细地阐述了RNN模型用于文本分类任务的各种变体模型。</p>
-</li>
-<li><p>​</p>
-</li>
-<li><p>​</p>
 </li>
 <li><p>CLSTM </p>
 </li>
@@ -494,7 +496,8 @@
 </li>
 <li><p>RNN</p>
 <ul>
-<li><p>LSTM</p>
+<li><p>LSTM（你也可以换成GRU，经过多次试验GRU的性能较LSTM稍好）</p>
+<p>GRU采用与LSTM相似的单元结构用于控制信息的更新与保存，它将遗忘门和输入门合成了一个单一的更新门，最终的模型比标准的 LSTM 模型要简单，也是非常流行的变体。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">model = Sequential()</div><div class="line">model.add(Embedding(len(vocab)+<span class="number">1</span>, <span class="number">300</span>, input_length=<span class="number">20</span>))</div><div class="line">model.add(LSTM(<span class="number">256</span>, dropout=<span class="number">0.2</span>, recurrent_dropout=<span class="number">0.1</span>))</div><div class="line">model.add(Dense(num_labels, activation=<span class="string">'softmax'</span>))</div></pre></td></tr></table></figure>
 </li>
 <li><p>Bi-GRU</p>
@@ -524,11 +527,34 @@
 <li><p>FastText（模型很简单，比较复杂的是构造输入数据）</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="comment"># 生成n-gram组合的词(以3为例)</span></div><div class="line">ngram = <span class="number">3</span></div><div class="line"><span class="comment"># 将n-gram词加入到词表</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">create_ngram</span><span class="params">(sent, ngram_value)</span>:</span></div><div class="line">	<span class="keyword">return</span> set(zip(*[sent[i:] <span class="keyword">for</span> i <span class="keyword">in</span> range(ngram_value)]))</div><div class="line">ngram_set = set()</div><div class="line"><span class="keyword">for</span> sentence <span class="keyword">in</span> X_train_padded_seqs:</div><div class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">2</span>, ngram+<span class="number">1</span>):</div><div class="line">    	set_of_ngram = create_ngram(sentence, i)</div><div class="line">    	ngram_set.update(set_of_ngram)</div><div class="line"><span class="comment"># 给n-gram词汇编码</span></div><div class="line">start_index = len(vocab) + <span class="number">2</span></div><div class="line">token_indice = &#123;v: k + start_index <span class="keyword">for</span> k, v <span class="keyword">in</span> enumerate(ngram_set)&#125; <span class="comment"># 给n-gram词汇编码</span></div><div class="line">indice_token = &#123;token_indice[k]: k <span class="keyword">for</span> k <span class="keyword">in</span> token_indice&#125;</div><div class="line">max_features = np.max(list(indice_token.keys())) + <span class="number">1</span></div><div class="line"><span class="comment"># 将n-gram词加入到输入文本的末端</span></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">add_ngram</span><span class="params">(sequences, token_indice, ngram_range)</span>:</span></div><div class="line">    new_sequences = []</div><div class="line">    <span class="keyword">for</span> sent <span class="keyword">in</span> sequences:</div><div class="line">        new_list = sent[:]</div><div class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(len(new_list) - ngram_range + <span class="number">1</span>):</div><div class="line">            <span class="keyword">for</span> ngram_value <span class="keyword">in</span> range(<span class="number">2</span>, ngram_range + <span class="number">1</span>):</div><div class="line">                ngram = tuple(new_list[i:i + ngram_value])</div><div class="line">                <span class="keyword">if</span> ngram <span class="keyword">in</span> token_indice:</div><div class="line">                    new_list.append(token_indice[ngram])</div><div class="line">        new_sequences.append(new_list)</div><div class="line">    <span class="keyword">return</span> new_sequences</div><div class="line">  </div><div class="line">x_train = add_ngram(X_train_word_ids, token_indice, ngram)</div><div class="line">x_test = add_ngram(X_test_word_ids, token_indice, ngram)</div><div class="line">x_train = pad_sequences(x_train, maxlen=<span class="number">25</span>)</div><div class="line">x_test = pad_sequences(x_test, maxlen=<span class="number">25</span>)</div><div class="line"></div><div class="line">model = Sequential()</div><div class="line">model.add(Embedding(max_features, <span class="number">300</span>, input_length=<span class="number">25</span>))</div><div class="line">model.add(GlobalAveragePooling1D())</div><div class="line">model.add(Dense(num_labels, activation=<span class="string">'softmax'</span>))</div></pre></td></tr></table></figure>
 </li>
+<li><p>Char-Level</p>
+<p>我分别测试了TextCNN和RNN模型采用字符作为输入时的模型性能，发现不尽如人意，究其原因，可能是字级别粒度太细，而且文本是短文本，并不能反映出什么有效的信息。前者能达到0.4勉强及格的准确率，而后者只能达到0.28的准确率。因此，不再尝试对短文本进行字粒度的考证。这里想简单应用字符级别的输入，只需对原始文本稍作改变即可。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">all_sent = [] <span class="comment"># 用于存放新的文本 如 A m y ' s   J i g s a w   S c r a p b o o k</span></div><div class="line"><span class="keyword">for</span> sent <span class="keyword">in</span> title.tolist():</div><div class="line">    new = []</div><div class="line">    <span class="keyword">for</span> word <span class="keyword">in</span> sent:</div><div class="line">        <span class="keyword">for</span> char <span class="keyword">in</span> word:</div><div class="line">            new.append(word)</div><div class="line">        new_sent = <span class="string">" "</span>.join(new)</div><div class="line">    all_sent.append(new_sent)</div></pre></td></tr></table></figure>
+<p>​</p>
+</li>
 <li><p>模型结果比较</p>
 <p>​</p>
 </li>
 </ul>
 <h2 id="推文情感分析"><a href="#推文情感分析" class="headerlink" title="推文情感分析"></a>推文情感分析</h2><p>之前我提到其实，这个分类任务并没有什么实际的意义，只是为了熟悉模型，小试牛刀，接下来我们来试试更大的数据集，比如推文的情感分析任务。</p>
+<h2 id="京东评论"><a href="#京东评论" class="headerlink" title="京东评论"></a>京东评论</h2><p>我们再来试试中文的文本分类。中文天生有个坑需要去跨越，那就是分词，对于一般的文本，现有的分词工具已经能够出色地完成任务了。而面对网络文本，目前还没有看到有效的解决方案，这篇<a href="http://www.aclweb.org/anthology/N16-1030" target="_blank" rel="external">论文</a>尝试使用Bi-LSTM+CRF的方法来实现深度学习模型分词器，有空可以来研究下。所以，本文目前还是使用的主流的分词工具结巴分词。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>我们来回顾下，我们至此学到了哪些内容。</p>
+<ul>
+<li>文本分类任务的处理流程</li>
+<li>传统机器学习模型的处理方法（Baseline：TF-IDF + 分类器）</li>
+<li>常见的深度学习模型（CNN，RNN，Attention）</li>
+<li>历年经典论文中的模型复现（TextCNN，RCNN，HAN等）</li>
+<li>实战（多分类的小数据集，推文情感分析，京东评论好中差评）</li>
+</ul>
+<p>最后给大家推荐一些高质量的学习资源：</p>
+<ul>
+<li>NLP大牛 Chris Manning 和 Richard Socher 在 Stanford 合开的课程CS224d【<a href="http://cs224d.stanford.edu/syllabus.html" target="_blank" rel="external">课程链接</a>】（一直静下心来认真学习这门课程 T T）</li>
+<li>Google Brain成员Christopher Olah大神的理论<a href="http://colah.github.io/" target="_blank" rel="external">博客</a></li>
+<li>另一位Google Brain成员Denny Britz大神关于NLP的博客 <a href="http://www.wildml.com/" target="_blank" rel="external">WILDML</a></li>
+<li>MOOC课程资源：优达学城深度学习基石纳米<a href="https://cn.udacity.com/dlnd" target="_blank" rel="external">学位</a>和吴恩达三大项目之一<a href="https://www.deeplearning.ai/" target="_blank" rel="external">deeplearning.ai</a></li>
+</ul>
+<p>希望大家能够有所收获，第一次自己动手码字，有很多论文和模型的理解还不够深刻！关于代码部分，我接下来会整理好放到github上，你们也能在我的主页找到我的github地址。欢迎大家向我提出宝贵的意见！如果你喜欢我的文章，欢迎转发，注明转发来源即可，链接二维码在此 :D</p>
+<p><img src="http://ovcg0j4b2.bkt.clouddn.com/17-8-30/68491740.jpg" alt=""></p>
 
           
         
