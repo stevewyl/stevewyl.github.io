@@ -79,10 +79,12 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="文本分类,Keras," />
 
 
 
+
+  
 
 
   <link rel="alternate" href="/atom.xml" title="DL炼丹房" type="application/atom+xml" />
@@ -97,13 +99,43 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="DL炼丹房">
-<meta property="og:url" content="https://stevewyl.github.io/index.html">
+<meta name="description" content="写在前面从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：Github，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，">
+<meta name="keywords" content="文本分类,Keras">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Keras之文本分类实现">
+<meta property="og:url" content="https://stevewyl.github.io/2017/09/09/keras/index.html">
 <meta property="og:site_name" content="DL炼丹房">
+<meta property="og:description" content="写在前面从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：Github，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/57232353.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/19849125.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/73075953.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/30339409.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/18106498.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/54396153.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-29/69730967.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-29/74136352.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-29/75206008.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-9-6/53207281.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-9-8/67010515.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-9-7/9330995.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-9-7/9080347.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-29/18150827.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-9-7/6359712.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-9-8/55497247.jpg">
+<meta property="og:image" content="https://pic4.zhimg.com/v2-d05248ae98b7e8c759e712796b08b09b_b.png">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-9-9/22887552.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-9-9/10302888.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-9-9/82840996.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-9-9/33303016.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-9-9/30969236.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-9-9/26135016.jpg">
+<meta property="og:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-30/68491740.jpg">
+<meta property="og:updated_time" content="2017-09-09T12:05:50.989Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="DL炼丹房">
+<meta name="twitter:title" content="Keras之文本分类实现">
+<meta name="twitter:description" content="写在前面从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：Github，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，">
+<meta name="twitter:image" content="http://ovcg0j4b2.bkt.clouddn.com/17-8-27/57232353.jpg">
 
 
 
@@ -133,13 +165,13 @@
 
 
 
-  <link rel="canonical" href="https://stevewyl.github.io/"/>
+  <link rel="canonical" href="https://stevewyl.github.io/2017/09/09/keras/"/>
 
 
 
 
 
-  <title>DL炼丹房</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  <title>Keras之文本分类实现 | DL炼丹房</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
   
 
 
@@ -158,8 +190,7 @@
     
   
 
-  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left 
-  page-home">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -252,9 +283,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -284,9 +315,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/09/09/keras/" itemprop="url">Keras之文本分类实现</a></h1>
+          <h1 class="post-title" itemprop="name headline">Keras之文本分类实现</h1>
         
 
         <div class="post-meta">
@@ -369,9 +398,7 @@
       
 
       
-        
-          
-            <h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：<a href="https://github.com/llSourcell/How_to_do_Sentiment_Analysis" target="_blank" rel="external">Github</a>，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，是否有可能把过去几年内那些大牛们论文中的模型复现出来呢？阅读这篇文章，需要你对自然语言处理和深度学习的模型有一个基础的了解哦！</p>
+        <h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>从优达DLND毕业后，一直想自己动手做点什么来着，互助班的导师也鼓励自己动手写点心得体验啥的。之前一直没怎么观看Youtube网红Siraj老师的课程视频，他每个视频最后都会有一个编程挑战。于是，想着先从自己熟悉的内容着手吧，Siraj老师第三周的编程挑战是做一个多类别的文本分类器，链接在此：<a href="https://github.com/llSourcell/How_to_do_Sentiment_Analysis" target="_blank" rel="external">Github</a>，那就来试试吧。除了想自己练练手外，也顺便把模型都好好梳理一遍。为了给自己增加些难度，是否有可能把过去几年内那些大牛们论文中的模型复现出来呢？阅读这篇文章，需要你对自然语言处理和深度学习的模型有一个基础的了解哦！</p>
 <p>另外，需要声明的是，本文在写作过程中或多或少参考了如下大牛们的博客：</p>
 <ol>
 <li><a href="https://zhuanlan.zhihu.com/p/25928551" target="_blank" rel="external">用深度学习（CNN RNN Attention）解决大规模文本分类问题 - 综述和实践</a></li>
@@ -662,8 +689,6 @@
 <p>如果你喜欢我的文章，欢迎转发，注明转发来源即可，链接二维码在此 :D</p>
 <p><img src="http://ovcg0j4b2.bkt.clouddn.com/17-8-30/68491740.jpg" alt=""></p>
 
-          
-        
       
     </div>
     
@@ -678,14 +703,22 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/文本分类/" rel="tag"># 文本分类</a>
+          
+            <a href="/tags/Keras/" rel="tag"># Keras</a>
+          
+        </div>
+      
+
+      
+      
+      
 
       
 
       
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -695,10 +728,11 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -706,6 +740,12 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8zMDUzOS83MDk0"></div>
+    
+  </div>
+
 
         </div>
         
@@ -726,8 +766,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/uploads/dabai.jpg"
@@ -822,6 +871,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文本多分类"><span class="nav-number">2.</span> <span class="nav-text">文本多分类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#传统文本分类方法"><span class="nav-number">2.1.</span> <span class="nav-text">传统文本分类方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#走进NLP和DL"><span class="nav-number">2.2.</span> <span class="nav-text">走进NLP和DL</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#深度学习文本分类模型"><span class="nav-number">2.3.</span> <span class="nav-text">深度学习文本分类模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实战！"><span class="nav-number">2.4.</span> <span class="nav-text">实战！</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#推文情感分析"><span class="nav-number">3.</span> <span class="nav-text">推文情感分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#京东评论"><span class="nav-number">4.</span> <span class="nav-text">京东评论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#写在最后"><span class="nav-number">5.</span> <span class="nav-text">写在最后</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -943,10 +1008,10 @@
   
 
   
-    <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
 <script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
 
-  
+
 
   
 
@@ -975,6 +1040,17 @@
 
 
 
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
   
 
 
